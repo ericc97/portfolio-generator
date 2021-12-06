@@ -1,16 +1,9 @@
 const inquirer = require('inquirer');
+const generatePage = require('./src/page-template');
 
-// const fs = require('fs');
-// const generatePage = require('./src/page-template');
-
-// const pageHTML = generatePage(name, github);
+ const {writeFile, copyFile} = require('./utils/generate-site.js');
 
 
-// fs.writeFile('index.html', pageHTML, err => {
-//         if (err) throw err;
-
-//         console.log('Portfolio complete! Check out index.html to see the output!');
-// });
 const promptUser = () => {
       return inquirer.prompt([
          {
@@ -61,20 +54,30 @@ const promptUser = () => {
 
 
 const promptProject = portfolioData => {
-        // if there is no 'projects' array property, create one
-        if (!portfolioData.projects) {
-                portfolioData.projects = [];
-        }
-        console.log(`
+  console.log(`
 ======================
  Add a New Project        
 ======================
 `);
-        return inquirer.prompt([
+        // if there is no 'projects' array property, create one
+        if (!portfolioData.projects) {
+                portfolioData.projects = [];
+        }
+        
+        return inquirer
+          .prompt([
                 {
                         type: 'input',
                         name: 'name',
-                        message: 'What is the name of your project?'
+                        message: 'What is the name of your project?',
+                        validate: nameInput => {
+                                if (nameInput) {
+                                        return true;
+                                }else {
+                                        console.log('You need to enter a project name!');
+                                        return false;
+                                }
+                        }
                 },
                 {
                         type: 'input',
@@ -135,5 +138,21 @@ const promptProject = portfolioData => {
  promptUser()
  .then(promptProject)
  .then(portfolioData => {
-         console.log(portfolioData);
+        return generatePage(portfolioData);
+ })
+ .then(pageHTML => {
+         return writeFile(pageHTML);
+ })
+ .then(writeFileResponse => {
+         console.log(writeFileResponse);
+         return copyFile();
+ })
+ .then(copyFileResponse => {
+         console.log(copyFileResponse);
+ })
+ .catch(err => {
+         console.log(err);
  });
+
+
+       
